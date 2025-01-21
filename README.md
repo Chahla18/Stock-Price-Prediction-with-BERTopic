@@ -1,0 +1,1 @@
+This is a project on stock price prediction using sentiment analysis with BERTopic.
