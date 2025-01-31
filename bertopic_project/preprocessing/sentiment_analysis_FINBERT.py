@@ -81,7 +81,7 @@ def combine_and_process_data(reddit_df, stock_df):
     combined_df = pd.merge(reddit_df, 
                           stock_df, 
                           left_on=['date', 'ticker'], 
-                          right_on=['Date', 'ticker'])
+                          right_on=['Date', 'Ticker'])
     
     # Encodage des variables catégorielles
     combined_df['topic'] = pd.Categorical(combined_df['topic']).codes
