@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
+from bertopic import BERTopic
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 from tqdm import tqdm
@@ -28,6 +29,26 @@ def load_processed_data():
         print(f"Erreur lors du chargement des fichiers : {e}")
         return None, None
 
+def extract_topics(df):
+    """Extrait les topics avec BERTopic"""
+    print("Extraction des topics avec BERTopic...")
+    
+    # Initialisation du modèle BERTopic
+    topic_model = BERTopic(language="english", 
+                          min_topic_size=20, 
+                          n_gram_range=(1,3))
+    
+    # Entraînement du modèle sur les textes
+    topics, probs = topic_model.fit_transform(df['cleaned_text'])
+    
+    # Ajout des topics au DataFrame
+    df['topic'] = topics
+
+    print("\nTopics les plus fréquents :")
+    print(topic_model.get_topic_info().head())
+    
+    return df, topic_model
+
 def apply_finbert_sentiment(df):
     """Applique l'analyse de sentiment FinBERT sur les textes"""
     # Chargement du modèle FinBERT
@@ -46,70 +67,71 @@ def apply_finbert_sentiment(df):
             'finbert_positive': predictions[0][2].item()
         })
     
-    # Application de l'analyse sur chaque texte avec tqdm
     sentiment_scores = pd.DataFrame()
     for text in tqdm(df['cleaned_text']):
         scores = get_finbert_sentiment(text)
         sentiment_scores = pd.concat([sentiment_scores, scores.to_frame().T], ignore_index=True)
     
-    # Ajout des scores au DataFrame
     df = pd.concat([df, sentiment_scores], axis=1)
-    
-    # Afficher quelques exemples
-    print("\nExemples de scores FinBERT :")
-    for _, row in df.head().iterrows():
-        print(f"\nTexte : {row['cleaned_text'][:100]}...")
-        print(f"Scores : Neg={row['finbert_negative']:.3f}, Neu={row['finbert_neutral']:.3f}, Pos={row['finbert_positive']:.3f}")
-    
     return df
 
-def aggregate_daily_sentiment(df):
-    """Agrège les scores de sentiment par jour"""
-    # Liste des colonnes de sentiment
-    finbert_cols = ['finbert_negative', 'finbert_neutral', 'finbert_positive']
+def combine_and_process_data(reddit_df, stock_df):
+    """Fusionne et prépare les données pour l'analyse"""
+    # Fusion des données Reddit et stocks sur la date et le ticker
+    combined_df = pd.merge(reddit_df, 
+                          stock_df, 
+                          left_on=['date', 'ticker'], 
+                          right_on=['Date', 'ticker'])
     
-    # Agrégation par jour
-    daily_sentiment = df.groupby('date').agg({
-        **{col: 'mean' for col in finbert_cols},
-        'cleaned_text': 'count'  # Nombre de posts par jour
-    }).rename(columns={'cleaned_text': 'post_count'})
+    # Encodage des variables catégorielles
+    combined_df['topic'] = pd.Categorical(combined_df['topic']).codes
     
-    # Afficher les statistiques quotidiennes
-    print("\nStatistiques quotidiennes :")
-    print(f"Nombre total de jours : {len(daily_sentiment)}")
-    print("\nMoyennes des scores par jour :")
-    print(daily_sentiment[finbert_cols].describe())
+    # Normalisation des features numériques
+    numeric_features = ['finbert_negative', 'finbert_neutral', 'finbert_positive', 
+                       'Open', 'High', 'Low', 'Close', 'Volume']
     
-    return daily_sentiment
+    combined_df[numeric_features] = (combined_df[numeric_features] - 
+                                   combined_df[numeric_features].mean()) / combined_df[numeric_features].std()
+    
+    return combined_df
 
-def save_sentiment_data(sentiment_df, daily_sentiment):
-    """Sauvegarde les données avec les scores de sentiment"""
+def save_processed_data(reddit_df, combined_df, topic_model):
+    """Sauvegarde les données traitées"""
     try:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         output_dir = os.path.join(base_dir, 'data', 'data_processed')
         
-        # Sauvegarde des données complètes avec sentiment
-        sentiment_output = os.path.join(output_dir, 'reddit_with_finbert_sentiment.csv')
-        sentiment_df.to_csv(sentiment_output, index=False)
+        # Sauvegarde des données Reddit avec topics et sentiments
+        reddit_output = os.path.join(output_dir, 'reddit_processed_full.csv')
+        reddit_df.to_csv(reddit_output, index=False)
         
-        # Sauvegarde des données agrégées par jour
-        daily_output = os.path.join(output_dir, 'daily_finbert_sentiment.csv')
-        daily_sentiment.to_csv(daily_output)
+        # Sauvegarde des données combinées et normalisées
+        combined_output = os.path.join(output_dir, 'combined_processed_data.csv')
+        combined_df.to_csv(combined_output, index=False)
         
-        print(f"\nDonnées sauvegardées avec succès dans :\n{sentiment_output}\n{daily_output}")
+        # Sauvegarde du modèle de topics
+        model_output = os.path.join(output_dir, 'bertopic_model')
+        topic_model.save(model_output)
+        
+        print(f"\nDonnées sauvegardées avec succès dans :\n{reddit_output}\n{combined_output}")
+        print(f"Modèle BERTopic sauvegardé dans : {model_output}")
+        
     except Exception as e:
         print(f"Erreur lors de la sauvegarde : {e}")
 
 if __name__ == "__main__":
-    # 1. Chargement des données
+
     reddit_df, stock_df = load_processed_data()
     
-    if reddit_df is not None:
-        # 2. Application de FinBERT
+    if reddit_df is not None and stock_df is not None:
+        # Extraction des topics
+        reddit_df, topic_model = extract_topics(reddit_df)
+        
+        # Analyse de sentiment
         reddit_df = apply_finbert_sentiment(reddit_df)
         
-        # 3. Agrégation quotidienne
-        daily_sentiment = aggregate_daily_sentiment(reddit_df)
+        # Combinaison et préparation des données
+        combined_df = combine_and_process_data(reddit_df, stock_df)
         
-        # 4. Sauvegarde des résultats
-        save_sentiment_data(reddit_df, daily_sentiment)
+        # Sauvegarde des résultats
+        save_processed_data(reddit_df, combined_df, topic_model)
