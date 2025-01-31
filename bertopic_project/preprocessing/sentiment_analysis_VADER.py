@@ -43,16 +43,14 @@ def apply_vader_sentiment(df):
             'vader_compound': scores['compound']
         })
     
-    # Application de l'analyse sur chaque texte avec tqdm pour suivre la progression
+    # Application de l'analyse sur chaque texte avec tqdm 
     sentiment_scores = pd.DataFrame()
     for text in tqdm(df['cleaned_text']):
         scores = get_sentiment_scores(text)
         sentiment_scores = pd.concat([sentiment_scores, scores.to_frame().T], ignore_index=True)
-    
-    # Ajout des scores au DataFrame
     df = pd.concat([df, sentiment_scores], axis=1)
     
-    # Afficher quelques exemples de textes avec leurs scores
+    # quelques exemples de textes avec leurs scores
     print("\nExemples de scores VADER :")
     for _, row in df.head().iterrows():
         print(f"\nTexte : {row['cleaned_text'][:100]}...")
@@ -62,7 +60,7 @@ def apply_vader_sentiment(df):
 
 def aggregate_daily_sentiment(df):
     """Agrège les scores de sentiment par jour"""
-    # Liste des colonnes de sentiment VADER
+
     vader_cols = ['vader_neg', 'vader_neu', 'vader_pos', 'vader_compound']
     
     # Agrégation par jour
@@ -71,7 +69,6 @@ def aggregate_daily_sentiment(df):
         'cleaned_text': 'count'  # Nombre de posts par jour
     }).rename(columns={'cleaned_text': 'post_count'})
     
-    # Afficher les statistiques quotidiennes
     print("\nStatistiques quotidiennes :")
     print(f"Nombre total de jours : {len(daily_sentiment)}")
     print("\nMoyennes des scores par jour :")
@@ -98,15 +95,9 @@ def save_sentiment_data(sentiment_df, daily_sentiment):
         print(f"Erreur lors de la sauvegarde : {e}")
 
 if __name__ == "__main__":
-    # 1. Chargement des données
     reddit_df, stock_df = load_processed_data()
     
     if reddit_df is not None:
-        # 2. Application de VADER
         reddit_df = apply_vader_sentiment(reddit_df)
-        
-        # 3. Agrégation quotidienne
         daily_sentiment = aggregate_daily_sentiment(reddit_df)
-        
-        # 4. Sauvegarde des résultats
         save_sentiment_data(reddit_df, daily_sentiment)
