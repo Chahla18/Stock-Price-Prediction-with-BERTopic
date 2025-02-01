@@ -6,6 +6,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 import time
 
+
 def handle_cookie_consent(driver):
     """Handle the cookie consent popup if it appears"""
     try:
@@ -19,29 +20,32 @@ def handle_cookie_consent(driver):
         # If no popup appears, just continue
         pass
 
+
 def get_trending_tickers():
     """Get list of trending tickers from Yahoo Finance"""
     driver = webdriver.Chrome()
     try:
         driver.get("https://finance.yahoo.com/markets/stocks/trending/")
-        
+
         handle_cookie_consent(driver)
-        
+
         table = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "table[data-testid='table-container']"))
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, "table[data-testid='table-container']")
+            )
         )
-        
+
         rows = table.find_elements(By.TAG_NAME, "tr")
         trending_stocks = {}
-        
+
         for row in rows[1:]:
             cols = row.find_elements(By.TAG_NAME, "td")
             if cols:
                 ticker = cols[0].text
                 name = cols[1].text
                 trending_stocks[ticker] = name
-                
+
         return trending_stocks
-    
+
     finally:
         driver.quit()
