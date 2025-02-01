@@ -56,7 +56,7 @@ def extract_topics(df):
 
     return df, topic_info, topic_model
 
-def save_topic_results(df, topic_info, topic_model, data_processed_dir):
+def save_topic_results(df, topic_info, data_processed_dir):
     """Save results of topic modeling"""
     # Save data with topics
     output_path = os.path.join(data_processed_dir, 'reddit_with_topics.csv')
@@ -66,13 +66,8 @@ def save_topic_results(df, topic_info, topic_model, data_processed_dir):
     topic_info_path = os.path.join(data_processed_dir, 'topic_info.csv')
     topic_info.to_csv(topic_info_path, index=False)
 
-    # Save model
-    model_path = os.path.join(data_processed_dir, 'topic_model')
-    topic_model.save(model_path)
-
     print(f" Saved processed data to {output_path}")
     print(f" Saved topic info to {topic_info_path}")
-    print(f" Saved model to {model_path}")
 
 def main():
     # Setup paths
@@ -98,7 +93,7 @@ def main():
     print(topic_info.head())
 
     # Save results
-    save_topic_results(df_with_topics, topic_info, topic_model, data_processed_dir)
+    save_topic_results(df_with_topics, topic_info, data_processed_dir)
 
 if __name__ == "__main__":
     main()
