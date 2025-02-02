@@ -29,7 +29,7 @@ This project combines sentiment analysis from multiple sources with deep learnin
 │
 └── 📄 main.py                   # Main execution script
 📁 notebooks/
-├── 📄 main.ipynb                # Main notebook
+├── 📄 main_notebook.ipynb                # Main notebook
 
 
 ```
