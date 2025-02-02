@@ -186,6 +186,22 @@ async def get_tesla_tweets_data():
     file_path = "bertopic_project/data_extraction/raw/Tweets_TSLA.csv"
     return read_csv_file(file_path)
 
+@app.get("/api/data/predictions", tags=["Predictions"])
+async def get_predictions():
+    """
+    Retourne les prédictions stockées dans le fichier future_predictions.csv en JSON.
+    """
+    file_path = "bertopic_project/data_prediction/future_predictions.csv"
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Fichier de prédictions non trouvé")
+
+    try:
+        df = pd.read_csv(file_path)
+        df["Date"] = pd.to_datetime(df["Date"]).dt.strftime("%Y-%m-%d")
+        return JSONResponse(content=df.to_dict(orient="records"))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur de lecture du fichier: {str(e)}")
 
 def run_api():
     """Run the FastAPI application"""
