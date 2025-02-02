@@ -57,7 +57,16 @@ source venv/bin/activate
 ```
 4. Install required packages
 ```bash
-pip install -r requirements.txt
+pip install poetry 
+```
+then
+```bash
+poetry install
+```
+To run a script, use:
+
+```bash
+poetry run python chemin/vers/ton_script.py
 ```
 
 ## API: Tesla Data Analysis
