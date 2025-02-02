@@ -70,6 +70,10 @@ The API enables the extraction and analysis of Tesla stock data and generates pr
    ```bash
    pip install fastapi uvicorn pandas numpy psutil
    ```
+   or using poetry
+   ```bash
+   poetry install 
+   ```
 
 2. Start the API by running:  
    ```bash
