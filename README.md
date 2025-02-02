@@ -75,14 +75,7 @@ The API enables the extraction and analysis of Tesla stock data and generates pr
 
 ### 📌 Installation and Execution
 
-1. Make sure you have installed the necessary dependencies:  
-   ```bash
-   pip install fastapi uvicorn pandas numpy psutil
-   ```
-   or using poetry
-   ```bash
-   poetry install 
-   ```
+1. Make sure you have installed the necessary dependencies
 
 2. Start the API by running:  
    ```bash
