@@ -59,7 +59,7 @@ source venv/bin/activate
 ```bash
 pip install poetry 
 ```
-then
+Then
 ```bash
 poetry install
 ```
