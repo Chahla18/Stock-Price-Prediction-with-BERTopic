@@ -20,3 +20,69 @@ TSLA AAPL META
 4. The final script **scraper.py** will:
 - Create a merged file containing all requested stocks' data as **all_stocks_history.csv**
 - The file contains the following columns: **Date, Open, High, Low, Close, Adj Close, Volume, Ticker, Company_Name**
+
+## API: Tesla Data Analysis
+
+The API enables the extraction and analysis of Tesla stock data and generates predictions based on an LSTM model.
+
+### 📌 Installation and Execution
+
+1. Make sure you have installed the necessary dependencies:  
+   ```bash
+   pip install fastapi uvicorn pandas numpy psutil
+   ```
+
+2. Start the API by running:  
+   ```bash
+   python -m bertopic_project.data_prediction.api
+   ```
+   The API will be available at `http://localhost:8000/`
+
+---
+
+### 📊 Available Endpoints
+
+#### **1️⃣ Main Endpoint**
+- **GET `/`**  
+  - Returns general information about the API and its endpoints.
+
+#### **2️⃣ System Monitoring**
+- **GET `/health`**  
+  - Checks the system status and returns CPU, memory, and disk usage information.
+
+#### **3️⃣ Stock Data Scraping**
+- **POST `/api/scrape/tesla-stock`**  
+  - Executes real-time scraping of Tesla stock data from Yahoo Finance.  
+  - Stores the data in a CSV file.
+
+#### **4️⃣ Data Retrieval**
+- **GET `/api/data/tesla-stock`**  
+  - Returns historical Tesla stock data stored in `tesla_stock_history.csv`.
+
+- **GET `/api/data/reddit`**  
+  - Returns extracted Reddit data stored in `reddit_data.csv`.
+
+- **GET `/api/data/tesla-tweets`**  
+  - Returns Tesla-related tweets stored in `Tweets_TSLA.csv`.
+
+#### **5️⃣ Prediction Generation and Retrieval**
+- **GET `/api/data/predictions`**  
+  - Executes the LSTM model stored in `bertopic_project/data_prediction/model.py`.  
+  - Generates new predictions for the next 30 days.  
+  - Returns the updated forecasts stored in `future_predictions.csv`.
+
+---
+
+### 🚀 Usage Examples
+
+#### Retrieve updated predictions:
+```bash
+curl -X 'GET' 'http://localhost:8000/api/data/predictions' -H 'accept: application/json'
+```
+
+#### Scrape stock data:
+```bash
+curl -X 'POST' 'http://localhost:8000/api/scrape/tesla-stock' -H 'accept: application/json'
+```
+
+The API provides the latest Tesla stock data and updated predictions on future market trends.
