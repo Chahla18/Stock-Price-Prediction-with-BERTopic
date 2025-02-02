@@ -6,9 +6,11 @@ import psutil
 import time
 import os
 from datetime import datetime
+import numpy as np
+import pandas as pd
 
 # Import the scraper
-from data_extraction.scraping_yfinance.tesla_scraper import TeslaStockScraper
+from data_extraction.scraping_yfinance.scraper import TeslaStockScraper
 
 app = FastAPI(
     title="Tesla Data Analysis API",
@@ -139,6 +141,51 @@ async def get_config():
         "max_retries": 3,
         "timeout_seconds": 30
     }
+
+def read_csv_file(file_path: str):
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail=f"Fichier non trouvé: {file_path}")
+
+    try:
+        df = pd.read_csv(file_path)
+
+        # Remplacer les NaN et les valeurs infinies
+        df = df.fillna(0)  # Remplace les NaN par 0
+        df = df.replace([np.inf, -np.inf], 0)  # Remplace les valeurs infinies par 0
+
+        return df.to_dict(orient="records")
+    except Exception as e:
+        import traceback
+        error_msg = traceback.format_exc()
+        raise HTTPException(status_code=500, detail=f"Erreur de lecture du fichier : {error_msg}")
+
+# Endpoint pour récupérer les données de Reddit
+@app.get("/api/data/reddit", tags=["Data"])
+async def get_reddit_data():
+    """
+    Retourne les données du fichier reddit_data.csv en JSON.
+    """
+    file_path = "bertopic_project/data_extraction/raw/reddit_data.csv"
+    return read_csv_file(file_path)
+
+# Endpoint pour récupérer les données boursières de Tesla
+@app.get("/api/data/tesla-stock", tags=["Data"])
+async def get_tesla_stock_data():
+    """
+    Retourne les données du fichier tesla_stock_history.csv en JSON.
+    """
+    file_path = "bertopic_project/data_extraction/raw/tesla_stock_history.csv"
+    return read_csv_file(file_path)
+
+# Endpoint pour récupérer les tweets sur Tesla
+@app.get("/api/data/tesla-tweets", tags=["Data"])
+async def get_tesla_tweets_data():
+    """
+    Retourne les données du fichier Tweets_TSLA.csv en JSON.
+    """
+    file_path = "bertopic_project/data_extraction/raw/Tweets_TSLA.csv"
+    return read_csv_file(file_path)
+
 
 def run_api():
     """Run the FastAPI application"""
