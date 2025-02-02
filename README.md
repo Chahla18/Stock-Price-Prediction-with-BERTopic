@@ -125,3 +125,9 @@ curl -X 'POST' 'http://localhost:8000/api/scrape/tesla-stock' -H 'accept: applic
 ```
 
 The API provides the latest Tesla stock data and updated predictions on future market trends.
+
+
+## 👥 Authors
+- [Morgan JOWITT](https://github.com/morganjowitt)
+- [Chahla TARMOUN](https://github.com/Chahla18)
+- [Aya MOKHTAR](https://github.com/ayamokhtar)
