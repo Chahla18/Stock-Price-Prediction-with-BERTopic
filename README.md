@@ -118,11 +118,11 @@ The API enables the extraction and analysis of Tesla stock data and generates pr
 
 ---
 
-### 🚀 Usage Examples
+### 🚀 Usage Examples (when the API has already been launched)
 
 #### Retrieve updated predictions:
 ```bash
-curl -X 'GET' 'http://localhost:8000/api/data/predictions' -H 'accept: application/json'
+curl -X 'GET' 'http://localhost:8000/api/data/predictions_sans_topics' -H 'accept: application/json'
 ```
 
 #### Scrape stock data:
