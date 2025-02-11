@@ -188,13 +188,39 @@ async def get_tesla_tweets_data():
 
 import subprocess
 
-@app.get("/api/data/predictions", tags=["Predictions"])
+@app.get("/api/data/predictions_sans_topics", tags=["Predictions"])
 async def get_predictions():
     """
     Exécute le script de prédiction et retourne les prédictions stockées dans le fichier future_predictions.csv en JSON.
     """
-    file_path = "bertopic_project/data_prediction/future_predictions.csv"
-    model_script = "bertopic_project/data_prediction/model.py"
+    file_path = "bertopic_project/data_prediction/future_predictions_v2.csv"
+    model_script = "bertopic_project/data_prediction/modele_v2.py"
+
+    # Exécuter le script pour générer les nouvelles prédictions
+    try:
+        subprocess.run(["python", model_script], check=True)
+    except subprocess.CalledProcessError as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de l'exécution du modèle: {str(e)}")
+
+    # Vérifier si le fichier existe après l'exécution du script
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Fichier de prédictions non trouvé après l'exécution du modèle")
+
+    # Charger et retourner les prédictions
+    try:
+        df = pd.read_csv(file_path)
+        df["Date"] = pd.to_datetime(df["Date"]).dt.strftime("%Y-%m-%d")
+        return JSONResponse(content=df.to_dict(orient="records"))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur de lecture du fichier: {str(e)}")
+    
+@app.get("/api/data/predictions_avec_topics", tags=["Predictions"])
+async def get_predictions():
+    """
+    Exécute le script de prédiction et retourne les prédictions stockées dans le fichier future_predictions.csv en JSON.
+    """
+    file_path = "bertopic_project/data_prediction/future_predictions_v2_with_topics.csv"
+    model_script = "bertopic_project/data_prediction/modele_v2.py"
 
     # Exécuter le script pour générer les nouvelles prédictions
     try:
