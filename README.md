@@ -112,9 +112,9 @@ The API enables the extraction and analysis of Tesla stock data and generates pr
 
 #### **5️⃣ Prediction Generation and Retrieval**
 - **GET `/api/data/predictions`**  
-  - Executes the LSTM model stored in `bertopic_project/data_prediction/model.py`.  
-  - Generates new predictions for the next 30 days.  
-  - Returns the updated forecasts stored in `future_predictions.csv`.
+  - Executes the LSTM models stored in `bertopic_project/data_prediction/modele_v2.py`.  
+  - Generates new predictions for the next 19 days.  
+  - Returns the updated forecasts compared to the real values stored in `future_predictions_v2.csv` whether the predictions is made without the topics or in `future_predictions_v2_with_topics.csv` if they involve topic use.
 
 ---
 
